@@ -1,68 +1,127 @@
+// src/pages/VideoDetails.jsx
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import VideoCard from "../components/VideoCard";
+import API from "../api";
+import ReactPlayer from "react-player";
 
-export default function VideoDetail() {
+const VideoDetails = () => {
   const { id } = useParams();
+  const [video, setVideo] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
-  // Mock single video (in real app, fetch by id)
-  const video = {
-    id,
-    title: "Learn React in 10 Minutes 🚀",
-    channel: "Code with Ishfaq",
-    views: "25K",
-    description:
-      "In this tutorial, we go through the fundamentals of React and how you can get started quickly.",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const res = await API.get(`/videos/${id}`);
+        setVideo(res.data);
+        setComments(res.data.comments || []);
+      } catch (err) {
+        console.error("Error fetching video:", err);
+      }
+    };
+    fetchVideo();
+  }, [id]);
+
+  const handleLike = async () => {
+    try {
+      const res = await API.post(`/videos/${id}/like`);
+      setVideo(res.data);
+    } catch (err) {
+      console.error("Error liking video:", err);
+    }
   };
 
-  // Suggested videos
-  const suggestions = [
-    {
-      id: 2,
-      title: "Tailwind CSS Crash Course 💨",
-      channel: "Dev Academy",
-      views: "12K",
-      thumbnail: "https://picsum.photos/300/200?random=5",
-    },
-    {
-      id: 3,
-      title: "JavaScript Tips & Tricks ⚡",
-      channel: "Web Simplified",
-      views: "40K",
-      thumbnail: "https://picsum.photos/300/200?random=6",
-    },
-    {
-      id: 4,
-      title: "Building YouTube Clone 🎥",
-      channel: "Ishfaq Dev",
-      views: "8K",
-      thumbnail: "https://picsum.photos/300/200?random=7",
-    },
-  ];
+  const handleDislike = async () => {
+    try {
+      const res = await API.post(`/videos/${id}/dislike`);
+      setVideo(res.data);
+    } catch (err) {
+      console.error("Error disliking video:", err);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      const res = await API.post(`/videos/${id}/comments`, { text: newComment });
+      setComments([...comments, res.data]);
+      setNewComment("");
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await API.delete(`/videos/${id}/comments/${commentId}`);
+      setComments(comments.filter((c) => c._id !== commentId));
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
+
+  if (!video) return <p>Loading...</p>;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Video Player Section */}
-      <div className="lg:col-span-2">
-        <video
-          src={video.videoUrl}
-          controls
-          className="w-full rounded-lg shadow"
-        ></video>
-        <h1 className="text-xl font-bold mt-4">{video.title}</h1>
-        <p className="text-gray-600">{video.channel} • {video.views} views</p>
-        <p className="mt-2 text-gray-700">{video.description}</p>
+    <div className="p-4 max-w-4xl mx-auto">
+      <ReactPlayer url={video.videoUrl} width="100%" controls />
+      <h1 className="text-2xl font-bold mt-3">{video.title}</h1>
+      <p className="text-gray-600">{video.channelName}</p>
+      <p className="mb-3">{video.views} views</p>
+
+      {/* Like/Dislike buttons */}
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={handleLike}
+          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          👍 Like ({video.likes || 0})
+        </button>
+        <button
+          onClick={handleDislike}
+          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          👎 Dislike ({video.dislikes || 0})
+        </button>
       </div>
 
-      {/* Suggested Videos */}
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Suggested Videos</h2>
-        <div className="space-y-4">
-          {suggestions.map((s) => (
-            <VideoCard key={s.id} {...s} />
-          ))}
-        </div>
+      {/* Comments Section */}
+      <h2 className="text-xl font-semibold mb-2">Comments</h2>
+      <div className="mb-4 flex gap-2">
+        <input
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Add a comment..."
+          className="flex-1 border px-3 py-2 rounded"
+        />
+        <button
+          onClick={handleAddComment}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Post
+        </button>
       </div>
+
+      <ul>
+        {comments.map((c) => (
+          <li
+            key={c._id}
+            className="border-b py-2 flex justify-between items-center"
+          >
+            <span>{c.text}</span>
+            <button
+              onClick={() => handleDeleteComment(c._id)}
+              className="text-red-500 hover:text-red-700"
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
+
+export default VideoDetails;
