@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api"; // ✅ correct import path
+import API from "../api";
 
 const Register = () => {
   const navigate = useNavigate();
