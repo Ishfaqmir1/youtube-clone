@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiMenu, FiSearch, FiMic, FiBell, FiVideo } from "react-icons/fi";
+import { FiMenu, FiSearch, FiBell, FiVideo } from "react-icons/fi";
 
 function Navbar({ onToggleSidebar, user, setUser }) {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+
+  // Restore user from localStorage on reload
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) setUser(JSON.parse(savedUser));
+  }, [setUser]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -58,38 +64,54 @@ function Navbar({ onToggleSidebar, user, setUser }) {
         >
           <FiSearch size={20} />
         </button>
-        <button
-          type="button"
-          aria-label="Voice Search"
-          className="ml-2 p-2 rounded-full hover:bg-gray-100"
-        >
-          <FiMic size={20} />
-        </button>
       </form>
 
       {/* Right: Icons + Profile */}
       <div className="flex items-center space-x-4">
+        {/* Mobile Search */}
         <button
-          aria-label="Upload"
-          className="p-2 rounded-full hover:bg-gray-100 hidden sm:inline-flex"
+          onClick={() => navigate("/search")}
+          aria-label="Search"
+          className="sm:hidden p-2 rounded-full hover:bg-gray-100"
         >
-          <FiVideo size={22} />
+          <FiSearch size={22} />
         </button>
-        <button
-          aria-label="Notifications"
-          className="p-2 rounded-full hover:bg-gray-100 hidden sm:inline-flex"
-        >
-          <FiBell size={22} />
-        </button>
+
+        {/* Upload button (only when logged in) */}
+        {user && (
+          <Link
+            to="/upload"
+            className="p-2 rounded-full hover:bg-gray-100 hidden sm:inline-flex"
+            aria-label="Upload"
+          >
+            <FiVideo size={22} />
+          </Link>
+        )}
+
+        {/* Notifications (only when logged in) */}
+        {user && (
+          <button
+            aria-label="Notifications"
+            className="p-2 rounded-full hover:bg-gray-100 hidden sm:inline-flex"
+          >
+            <FiBell size={22} />
+          </button>
+        )}
 
         {/* Auth Section */}
         {user ? (
           <div className="relative group">
-            <img
-              src={user.avatar || "https://i.pravatar.cc/40"}
-              alt={user.username}
-              className="w-8 h-8 rounded-full cursor-pointer"
-            />
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.username}
+                className="w-8 h-8 rounded-full cursor-pointer"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer">
+                {user.username?.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg hidden group-hover:block">
               <Link
                 to="/profile"

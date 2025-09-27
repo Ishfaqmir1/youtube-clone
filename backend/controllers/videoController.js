@@ -1,6 +1,84 @@
 // backend/controllers/videoController.js
 import Video from "../models/Video.model.js";
 
+// 📌 Get all videos
+export const getVideos = async (req, res) => {
+  const videos = await Video.find().sort({ createdAt: -1 });
+  res.json(videos);
+};
+
+// 📌 Get video by ID
+export const getVideoById = async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) return res.status(404).json({ error: "Video not found" });
+    res.json(video);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// 📌 Add new video
+export const addVideo = async (req, res) => {
+  try {
+    const { title, channel, thumbnail, videoUrl } = req.body;
+    const newVideo = new Video({
+      title,
+      channel,
+      thumbnail,
+      videoUrl,
+      uploadedBy: req.user.id,
+    });
+    await newVideo.save();
+    res.status(201).json(newVideo);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// 📌 Update video
+export const updateVideo = async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) return res.status(404).json({ error: "Video not found" });
+
+    // Only uploader can update
+    if (video.uploadedBy.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to update this video" });
+    }
+
+    const { title, channel, thumbnail, videoUrl } = req.body;
+    video.title = title || video.title;
+    video.channel = channel || video.channel;
+    video.thumbnail = thumbnail || video.thumbnail;
+    video.videoUrl = videoUrl || video.videoUrl;
+
+    await video.save();
+    res.json(video);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// 📌 Delete video
+export const deleteVideo = async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) return res.status(404).json({ error: "Video not found" });
+
+    // Only uploader can delete
+    if (video.uploadedBy.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Not authorized to delete this video" });
+    }
+
+    await video.deleteOne();
+    res.json({ message: "Video deleted" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// 📌 Like video
 export const likeVideo = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
@@ -25,6 +103,7 @@ export const likeVideo = async (req, res) => {
   }
 };
 
+// 📌 Dislike video
 export const dislikeVideo = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
@@ -51,6 +130,7 @@ export const dislikeVideo = async (req, res) => {
   }
 };
 
+// 📌 Add comment
 export const addComment = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
@@ -66,6 +146,7 @@ export const addComment = async (req, res) => {
   }
 };
 
+// 📌 Delete comment
 export const deleteComment = async (req, res) => {
   try {
     const video = await Video.findById(req.params.id);
