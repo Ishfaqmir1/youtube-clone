@@ -1,25 +1,35 @@
+// backend/routes/authRoutes.js
 import express from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
 
 const router = express.Router();
 
+// Helper to generate token
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "15d" });
+};
+
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
+    // Check if email already exists
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "Email already registered" });
+    if (exists) return res.status(400).json({ error: "Email already registered" });
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashed });
+    
+    const user = new User({ username, email, password });
     await user.save();
 
-    res.json({ message: "User registered successfully" });
+    res.json({
+      token: generateToken(user._id),
+      user: { id: user._id, username: user.username, email: user.email },
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -29,19 +39,20 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
+    // bcrypt
+    const bcrypt = await import("bcryptjs");
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
     res.json({
-      token,
-      user: { id: user._id, name: user.name, email: user.email }
+      token: generateToken(user._id),
+      user: { id: user._id, username: user.username, email: user.email },
     });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
