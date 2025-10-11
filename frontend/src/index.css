@@ -1,3 +1,50 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ================================
+    GLOBAL LIGHT / DARK THEME FIX
+   ================================ */
+
+/* Make Tailwind respect system theme and transitions */
+html {
+  color-scheme: light dark;
+  scroll-behavior: smooth;
+}
+
+/* Global background + text for both themes */
+body {
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 ease-in-out;
+}
+
+/* Smooth color transitions globally */
+* {
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Scrollbar styling (light + dark) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-700 rounded-full;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-200 dark:bg-gray-800;
+}
+
+/* Remove default outline glow on focus (clean look) */
+:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Utility for hiding scrollbars in carousels or horizontal lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
