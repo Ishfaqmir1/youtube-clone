@@ -1,43 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import API from "../api"; // axios instance
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import API from "../api";
 
 function Login({ setUser }) {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      navigate("/"); // redirect to home
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // 🔹 Call backend
-      const res = await API.post("/auth/login", form);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-      // 🔹 Save to localStorage
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+  try {
+    const res = await API.post("/auth/login", form);
 
-      // 🔹 Update state in App.jsx
-      setUser(res.data.user);
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
+    localStorage.setItem("userId", res.data.user._id); // ✅ store userId separately
 
-      // 🔹 Redirect to home
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
-    }
-  };
+    setUser(res.data.user);
+    toast.success("Login successful!");
+    navigate("/");
+  } catch (err) {
+    const msg = err.response?.data?.error || "Login failed";
+    toast.error(msg);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <motion.form
+        onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md bg-white shadow-lg rounded-xl p-6"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center text-red-600">Sign in</h2>
+        
         <input
           type="email"
           name="email"
@@ -45,8 +62,9 @@ function Login({ setUser }) {
           value={form.email}
           onChange={handleChange}
           required
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border border-gray-300 px-3 py-2 rounded-lg mb-4"
         />
+        
         <input
           type="password"
           name="password"
@@ -54,22 +72,26 @@ function Login({ setUser }) {
           value={form.password}
           onChange={handleChange}
           required
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border border-gray-300 px-3 py-2 rounded-lg mb-4"
         />
+        
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          disabled={loading}
+          className={`w-full bg-red-600 text-white py-2 rounded-lg transition ${
+            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-red-700"
+          }`}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
-      </form>
-
-      <p className="mt-4 text-center text-sm">
-        Don’t have an account?{" "}
-        <Link to="/register" className="text-blue-500 hover:underline">
-          Register
-        </Link>
-      </p>
+        
+        <p className="mt-6 text-center text-sm">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-red-600 font-medium">
+            Register
+          </Link>
+        </p>
+      </motion.form>
     </div>
   );
 }
