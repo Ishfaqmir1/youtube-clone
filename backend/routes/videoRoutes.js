@@ -98,9 +98,9 @@ router.post("/", protect, async (req, res) => {
 });
 
 /**
- * -----------------------
+ * 
  * GET single video by ID
- * -----------------------
+ * 
  */
 router.get("/:id", async (req, res) => {
   try {
@@ -119,9 +119,9 @@ router.get("/:id", async (req, res) => {
 });
 
 /**
- * -----------------------
+ * 
  * Increment view count
- * -----------------------
+ *
  */
 router.post("/:id/view", async (req, res) => {
   try {
@@ -138,9 +138,9 @@ router.post("/:id/view", async (req, res) => {
 });
 
 /**
- * -----------------------
+ * 
  * Like video
- * -----------------------
+ * 
  */
 router.post("/:id/like", protect, async (req, res) => {
   try {
@@ -163,9 +163,9 @@ router.post("/:id/like", protect, async (req, res) => {
 });
 
 /**
- * -----------------------
+ * 
  * Dislike video
- * -----------------------
+ * 
  */
 router.post("/:id/dislike", protect, async (req, res) => {
   try {
@@ -188,9 +188,9 @@ router.post("/:id/dislike", protect, async (req, res) => {
 });
 
 /**
- * -----------------------
+ * 
  * Delete a video
- * -----------------------
+ *
  */
 router.delete("/:id", protect, async (req, res) => {
   try {

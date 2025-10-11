@@ -97,7 +97,7 @@ router.get("/:id", protect, async (req, res) => {
       : false;
     const isOwner = String(channel.owner?._id || channel.owner) === userId;
 
-    //  Always return a `videos` array (even if empty)
+    //  Always return a `videos` array 
     const videos = Array.isArray(channel.videos) ? channel.videos : [];
 
     res.json({
@@ -160,7 +160,7 @@ router.post("/:id/subscribe", protect, async (req, res) => {
 
 /**
  * -----------------------
- * Update Channel Details (Customize Channel)
+ * Update Channel Details 
  * -----------------------
  */
 router.put("/:id", protect, async (req, res) => {
