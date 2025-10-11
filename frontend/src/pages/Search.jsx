@@ -1,4 +1,3 @@
-// src/pages/Search.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import API from "../api";
@@ -6,15 +5,19 @@ import VideoCard from "../components/VideoCard";
 
 function Search() {
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
   const query = new URLSearchParams(useLocation().search).get("q");
 
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await API.get(`/videos?q=${query}`);
+        setLoading(true);
+        const res = await API.get(`/videos?search=${query}`);
         setResults(res.data);
       } catch (err) {
         console.error("Error fetching search results:", err);
+      } finally {
+        setLoading(false);
       }
     };
     if (query) fetchResults();
@@ -22,10 +25,11 @@ function Search() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">
-        Search Results for: {query}
-      </h1>
-      {results.length === 0 ? (
+      <h1 className="text-2xl font-bold mb-4">Search Results for: {query}</h1>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : results.length === 0 ? (
         <p>No videos found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
