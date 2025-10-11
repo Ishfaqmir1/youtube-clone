@@ -1,86 +1,130 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
-  FiHome,
-  FiPlayCircle,
-  FiClock,
-  FiHeart,
-  FiTrendingUp,
-  FiShoppingBag,
-  FiMusic,
-  FiFilm,
-  FiBookOpen,
-  FiTv,
-} from "react-icons/fi";
-import { MdSubscriptions, MdHistory, MdOutlineSportsSoccer } from "react-icons/md";
+  MdHomeFilled,
+  MdOutlineSubscriptions,
+  MdOutlineVideoLibrary,
+  MdOutlineWatchLater,
+  MdOutlineThumbUp,
+  MdHistory,
+  MdOutlineDownload,
+} from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
 
-function Sidebar() {
+function Sidebar({ collapsed, isOpenMobile, onCloseMobile }) {
+  const location = useLocation();
+
+  const sections = [
+    {
+      links: [
+        { to: "/", icon: <MdHomeFilled size={22} />, label: "Home" },
+        { to: "/shorts", icon: <SiYoutubeshorts size={22} />, label: "Shorts" },
+        {
+          to: "/subscriptions",
+          icon: <MdOutlineSubscriptions size={22} />,
+          label: "Subscriptions",
+        },
+      ],
+    },
+    {
+      title: "You",
+      links: [
+        { to: "/history", icon: <MdHistory size={22} />, label: "History" },
+        {
+          to: "/your-videos",
+          icon: <MdOutlineVideoLibrary size={22} />,
+          label: "Your Videos",
+        },
+        {
+          to: "/watch-later",
+          icon: <MdOutlineWatchLater size={22} />,
+          label: "Watch Later",
+        },
+        {
+          to: "/liked",
+          icon: <MdOutlineThumbUp size={22} />,
+          label: "Liked Videos",
+        },
+        {
+          to: "/downloads",
+          icon: <MdOutlineDownload size={22} />,
+          label: "Downloads",
+        },
+      ],
+    },
+  ];
+
+  const renderLink = ({ to, icon, label }) => {
+    const isActive = location.pathname === to;
+    return (
+      <Link
+        key={to}
+        to={to}
+        onClick={onCloseMobile}
+        className={`flex items-center ${
+          collapsed ? "justify-center" : "gap-4"
+        } px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+          isActive
+            ? "bg-gray-200 dark:bg-[#272727] font-semibold"
+            : "hover:bg-gray-100 dark:hover:bg-[#272727]"
+        }`}
+      >
+        {icon}
+        {!collapsed && <span>{label}</span>}
+      </Link>
+    );
+  };
+
+  const sidebarContent = (
+    <div className="p-2 overflow-y-auto h-full no-scrollbar">
+      {sections.map((section, i) => (
+        <div key={i} className="mb-4">
+          {!collapsed && section.title && (
+            <div className="text-xs uppercase font-semibold mb-2 px-2 text-gray-500 dark:text-gray-400">
+              {section.title}
+            </div>
+          )}
+          <nav className="space-y-1">{section.links.map(renderLink)}</nav>
+          {i < sections.length - 1 && (
+            <div className="border-b border-gray-200 dark:border-gray-700 my-3"></div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <aside className="w-56 bg-white border-r h-screen overflow-y-auto p-4 hidden md:block">
-      {/* Main Navigation */}
-      <nav className="space-y-2">
-        <Link to="/" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-          <FiHome size={20} /> <span>Home</span>
-        </Link>
-        <Link to="/shorts" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-          <SiYoutubeshorts size={20} /> <span>Shorts</span>
-        </Link>
-        <Link to="/subscriptions" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-          <MdSubscriptions size={20} /> <span>Subscriptions</span>
-        </Link>
-      </nav>
+    <>
+      {/*  Desktop Sidebar (collapsible) */}
+      <aside
+        className={`fixed top-[56px] left-0 h-[calc(100vh-56px)]
+        bg-white dark:bg-[#0f0f0f] text-black dark:text-white
+        border-r border-gray-200 dark:border-[#272727]
+        transition-[width] duration-300 ease-in-out z-20 hidden md:flex`}
+        style={{
+          width: collapsed ? "72px" : "240px",
+        }}
+      >
+        {sidebarContent}
+      </aside>
 
-      {/* Divider */}
-      <hr className="my-4" />
-
-      {/* Library Section */}
-      <div>
-        <h2 className="text-sm font-semibold mb-2 px-2">You</h2>
-        <nav className="space-y-2">
-          <Link to="/history" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <MdHistory size={20} /> <span>History</span>
-          </Link>
-          <Link to="/playlists" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiPlayCircle size={20} /> <span>Playlists</span>
-          </Link>
-          <Link to="/watch-later" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiClock size={20} /> <span>Watch later</span>
-          </Link>
-          <Link to="/liked" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiHeart size={20} /> <span>Liked videos</span>
-          </Link>
-        </nav>
-      </div>
-
-      {/* Divider */}
-      <hr className="my-4" />
-
-      {/* Explore Section */}
-      <div>
-        <h2 className="text-sm font-semibold mb-2 px-2">Explore</h2>
-        <nav className="space-y-2">
-          <Link to="/trending" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiTrendingUp size={20} /> <span>Trending</span>
-          </Link>
-          <Link to="/shopping" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiShoppingBag size={20} /> <span>Shopping</span>
-          </Link>
-          <Link to="/music" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiMusic size={20} /> <span>Music</span>
-          </Link>
-          <Link to="/movies" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiFilm size={20} /> <span>Movies</span>
-          </Link>
-          <Link to="/news" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <FiBookOpen size={20} /> <span>News</span>
-          </Link>
-          <Link to="/sports" className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100">
-            <MdOutlineSportsSoccer size={20} /> <span>Sports</span>
-          </Link>
-        </nav>
-      </div>
-    </aside>
+      {/*  Mobile Slide-In Sidebar */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={onCloseMobile}
+          ></div>
+          <div
+            className="relative w-72 h-full bg-white dark:bg-[#0f0f0f]
+              border-r border-gray-200 dark:border-[#272727]
+              overflow-y-auto transition-transform duration-300 transform translate-x-0"
+          >
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
