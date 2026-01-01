@@ -15,7 +15,7 @@ const getUpdatedVideo = async (videoId) => {
     });
 };
 
-//  Add Comment to a Video
+//  Add Comment
 router.post("/:videoId", protect, async (req, res) => {
   try {
     const { text } = req.body;
