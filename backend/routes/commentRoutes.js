@@ -1,5 +1,5 @@
 import express from "express";
-import Comment from "../models/Comment.model.js";
+import Comment from "../models/Comment.model.js";// NEW
 import Video from "../models/Video.model.js";
 import { protect } from "../middleware/authMiddleware.js";
 
